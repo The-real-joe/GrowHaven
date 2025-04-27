@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Post{% endblock %}
+
+{% block content %}
+<div class="create-post-container">
+    <h1>Create New Post</h1>
+    
+    <form method="POST" enctype="multipart/form-data" class="create-post-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            <div class="image-preview-container">
+                <div id="image-preview" class="image-preview">
+                    <div class="placeholder">
+                        <i class="placeholder-icon">📷</i>
+                        <p>Select an image to preview</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="file-input-container">
+                {{ form.image.label(class="form-label") }}
+                {{ form.image(class="form-control-file", id="image-input") }}
+                
+                {% if form.image.errors %}
+                    <div class="errors">
+                        {% for error in form.image.errors %}
+                            <span class="error-message">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <small class="form-text text-muted">Upload a square image for best results. Maximum file size: 5MB.</small>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            {{ form.caption.label(class="form-label") }}
+            {{ form.caption(class="form-control", placeholder="Write a caption...") }}
+            
+            {% if form.caption.errors %}
+                <div class="errors">
+                    {% for error in form.caption.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <small class="form-text text-muted">Add a caption to your post (optional).</small>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{{ url_for('feed') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Share Post</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .create-post-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .create-post-container h1 {
+        margin-bottom: 30px;
+    }
+    
+    .create-post-form {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    
+    .form-control-file {
+        display: block;
+        width: 100%;
+    }
+    
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1em;
+        min-height: 100px;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.85em;
+    }
+    
+    .text-muted {
+        color: #6c757d;
+    }
+    
+    .errors {
+        margin-top: 5px;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.85em;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .image-preview-container {
+        margin-bottom: 15px;
+    }
+    
+    .image-preview {
+        width: 100%;
+        height: 300px;
+        border: 2px dashed #ddd;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .placeholder {
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .placeholder-icon {
+        font-size: 3em;
+        display: block;
+        margin-bottom: 10px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Clear the preview
+                    imagePreview.innerHTML = '';
+                    
+                    // Create image element
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    
+                    // Add image to preview
+                    imagePreview.appendChild(img);
+                }
+                
+                reader.readAsDataURL(file);
+            } else {
+                // Reset to placeholder if no file selected
+                imagePreview.innerHTML = `
+                    <div class="placeholder">
+                        <i class="placeholder-icon">📷</i>
+                        <p>Select an image to preview</p>
+                    </div>
+                `;
+            }
+        });
+    });
+</script>
+{% endblock %}

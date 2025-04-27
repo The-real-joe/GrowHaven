@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Livestream - GrowHaven{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Create New Livestream</h1>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+            {% for error in form.title.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+            {% for error in form.description.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Describe what your livestream will be about. This helps viewers decide if they want to watch.</small>
+        </div>
+        
+        <div class="form-group">
+            {{ form.scheduled_time.label(class="form-label") }}
+            {{ form.scheduled_time(class="form-control") }}
+            {% for error in form.scheduled_time.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Optional. Format: YYYY-MM-DD HH:MM. Leave blank to create without a schedule.</small>
+        </div>
+        
+        <div class="form-group">
+            {{ form.thumbnail.label(class="form-label") }}
+            {{ form.thumbnail(class="form-control-file") }}
+            {% for error in form.thumbnail.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Optional. Recommended size: 1280x720 pixels (16:9 aspect ratio).</small>
+        </div>
+        
+        <div class="form-group">
+            <div class="livestream-info">
+                <h3>How to Stream</h3>
+                <p>After creating your livestream, you'll receive a unique stream key. You'll need to use streaming software like OBS Studio to go live:</p>
+                <ol>
+                    <li>Install <a href="https://obsproject.com/" target="_blank">OBS Studio</a> or similar streaming software</li>
+                    <li>In OBS, go to Settings > Stream</li>
+                    <li>Select "Custom..." as the service</li>
+                    <li>Set the Server to <code>rtmp://{{ request.host }}/live</code></li>
+                    <li>Enter your stream key (will be provided after creation)</li>
+                    <li>Click "Start Streaming" in OBS when you're ready to go live</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('livestreams') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+    
+    .form-control-file {
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .error {
+        color: #f44336;
+        font-size: 14px;
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .form-actions {
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background-color: #757575;
+        color: white;
+        margin-left: 10px;
+    }
+    
+    .btn:hover {
+        opacity: 0.9;
+    }
+    
+    .livestream-info {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    .livestream-info h3 {
+        margin-top: 0;
+    }
+    
+    .livestream-info code {
+        background-color: #e0e0e0;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+    
+    .livestream-info ol {
+        padding-left: 20px;
+    }
+    
+    .livestream-info li {
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}

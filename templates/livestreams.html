@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Livestreams - GrowHaven{% endblock %}
+
+{% block content %}
+<div class="livestreams-container">
+    <h1>Livestreams</h1>
+    
+    {% if current_user.is_authenticated %}
+    <div class="action-buttons">
+        <a href="{{ url_for('new_livestream') }}" class="btn btn-primary">Create New Livestream</a>
+    </div>
+    {% endif %}
+    
+    <!-- Live Streams Section -->
+    <section class="livestream-section">
+        <h2>Live Now</h2>
+        {% if live_streams %}
+            <div class="livestream-grid">
+                {% for stream in live_streams %}
+                <div class="livestream-card live">
+                    <div class="livestream-thumbnail">
+                        <img src="{{ url_for('static', filename='uploads/thumbnails/' + stream.thumbnail) }}" alt="{{ stream.title }}">
+                        <span class="live-badge">LIVE</span>
+                    </div>
+                    <div class="livestream-info">
+                        <h3><a href="{{ url_for('view_livestream', livestream_id=stream.id) }}">{{ stream.title }}</a></h3>
+                        <p class="streamer">By: {{ stream.user.username }}</p>
+                        <p class="stream-time">Started: {{ stream.started_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-streams">No livestreams are currently active.</p>
+        {% endif %}
+    </section>
+    
+    <!-- Upcoming Streams Section -->
+    <section class="livestream-section">
+        <h2>Upcoming Streams</h2>
+        {% if upcoming_streams %}
+            <div class="livestream-grid">
+                {% for stream in upcoming_streams %}
+                <div class="livestream-card upcoming">
+                    <div class="livestream-thumbnail">
+                        <img src="{{ url_for('static', filename='uploads/thumbnails/' + stream.thumbnail) }}" alt="{{ stream.title }}">
+                        <span class="upcoming-badge">UPCOMING</span>
+                    </div>
+                    <div class="livestream-info">
+                        <h3><a href="{{ url_for('view_livestream', livestream_id=stream.id) }}">{{ stream.title }}</a></h3>
+                        <p class="streamer">By: {{ stream.user.username }}</p>
+                        <p class="stream-time">Scheduled: {{ stream.scheduled_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-streams">No upcoming livestreams scheduled.</p>
+        {% endif %}
+    </section>
+    
+    <!-- Past Streams Section -->
+    <section class="livestream-section">
+        <h2>Past Streams</h2>
+        {% if past_streams %}
+            <div class="livestream-grid">
+                {% for stream in past_streams %}
+                <div class="livestream-card past">
+                    <div class="livestream-thumbnail">
+                        <img src="{{ url_for('static', filename='uploads/thumbnails/' + stream.thumbnail) }}" alt="{{ stream.title }}">
+                        <span class="past-badge">ENDED</span>
+                    </div>
+                    <div class="livestream-info">
+                        <h3><a href="{{ url_for('view_livestream', livestream_id=stream.id) }}">{{ stream.title }}</a></h3>
+                        <p class="streamer">By: {{ stream.user.username }}</p>
+                        <p class="stream-time">Ended: {{ stream.ended_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-streams">No past livestreams available.</p>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+    .livestreams-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+    
+    .livestream-section {
+        margin-bottom: 40px;
+    }
+    
+    .livestream-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .livestream-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .livestream-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .livestream-thumbnail {
+        position: relative;
+        height: 169px; /* 16:9 aspect ratio for 300px width */
+        overflow: hidden;
+    }
+    
+    .livestream-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .live-badge, .upcoming-badge, .past-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .live-badge {
+        background-color: #f44336; /* Red */
+    }
+    
+    .upcoming-badge {
+        background-color: #2196F3; /* Blue */
+    }
+    
+    .past-badge {
+        background-color: #757575; /* Gray */
+    }
+    
+    .livestream-info {
+        padding: 15px;
+    }
+    
+    .livestream-info h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+    
+    .livestream-info a {
+        color: #333;
+        text-decoration: none;
+    }
+    
+    .livestream-info a:hover {
+        color: #4CAF50;
+    }
+    
+    .streamer, .stream-time {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .no-streams {
+        color: #666;
+        font-style: italic;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #45a049;
+    }
+</style>
+{% endblock %}

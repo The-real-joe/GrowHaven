@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+
+{% block title %}Feed{% endblock %}
+
+{% block content %}
+<div class="feed-container">
+    <div class="feed-main">
+        <div class="feed-header">
+            <h1>Your Feed</h1>
+            <a href="{{ url_for('new_post') }}" class="btn btn-primary">Create New Post</a>
+        </div>
+
+        {% if posts %}
+            <div class="posts-list">
+                {% for post in posts %}
+                    <div class="post">
+                        <div class="post-header">
+                            <a href="{{ url_for('profile', username=post.author.username) }}" class="post-author">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + post.author.profile_image) }}" alt="{{ post.author.username }}">
+                                <span>{{ post.author.username }}</span>
+                            </a>
+                            <span class="post-time">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+
+                        <div class="post-image">
+                            <img src="{{ url_for('static', filename='uploads/posts/' + post.image_filename) }}" alt="Post by {{ post.author.username }}">
+                        </div>
+
+                        <div class="post-actions">
+                            <form action="{{ url_for('like_post', post_id=post.id) }}" method="post" class="like-form">
+                                <button type="submit" class="like-btn {% if current_user.is_authenticated and post.likes.filter_by(user_id=current_user.id).first() %}liked{% endif %}">
+                                    ❤️ <span class="like-count">{{ post.likes.count() }}</span>
+                                </button>
+                            </form>
+                            <a href="{{ url_for('post', post_id=post.id) }}" class="comment-btn">
+                                💬 <span class="comment-count">{{ post.comments.count() }}</span>
+                            </a>
+                        </div>
+
+                        {% if post.caption %}
+                            <div class="post-caption">
+                                <strong>{{ post.author.username }}</strong> {{ post.caption }}
+                            </div>
+                        {% endif %}
+
+                        {% if post.comments.count() > 0 %}
+                            <div class="post-comments-preview">
+                                {% for comment in post.comments.order_by(post.comments.c.created_at.desc()).limit(2).all() %}
+                                    <div class="comment">
+                                        <strong>{{ comment.author.username }}</strong> {{ comment.content }}
+                                    </div>
+                                {% endfor %}
+
+                                {% if post.comments.count() > 2 %}
+                                    <a href="{{ url_for('post', post_id=post.id) }}" class="view-all-comments">
+                                        View all {{ post.comments.count() }} comments
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="add-comment">
+                            <form action="{{ url_for('comment_post', post_id=post.id) }}" method="post">
+                                {{ comment_form.hidden_tag() }}
+                                <div class="comment-input-group">
+                                    {{ comment_form.content(class="comment-input", placeholder="Add a comment...") }}
+                                    <button type="submit" class="comment-submit">Post</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-posts">
+                <p>Your feed is empty. Follow some users to see their posts here!</p>
+                <a href="{{ url_for('search_users') }}" class="btn btn-primary">Find Users to Follow</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="feed-sidebar">
+        <div class="user-profile-card">
+            <a href="{{ url_for('profile', username=current_user.username) }}" class="user-profile-link">
+                <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.profile_image) }}" alt="{{ current_user.username }}">
+                <div class="user-info">
+                    <h3>{{ current_user.username }}</h3>
+                    {% if current_user.bio %}
+                        <p class="user-bio">{{ current_user.bio|truncate(50) }}</p>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+
+        {% if suggestions %}
+            <div class="suggestions-card">
+                <h3>Suggested for You</h3>
+                <div class="suggestions-list">
+                    {% for user in suggestions %}
+                        <div class="suggestion">
+                            <a href="{{ url_for('profile', username=user.username) }}" class="suggestion-user">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_image) }}" alt="{{ user.username }}">
+                                <div class="suggestion-info">
+                                    <span class="suggestion-username">{{ user.username }}</span>
+                                    {% if user.bio %}
+                                        <span class="suggestion-bio">{{ user.bio|truncate(30) }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            <form action="{{ url_for('follow', username=user.username) }}" method="post">
+                                <button type="submit" class="follow-btn">Follow</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .feed-container {
+        display: flex;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        gap: 30px;
+    }
+
+    .feed-main {
+        flex: 1;
+        max-width: 600px;
+    }
+
+    .feed-sidebar {
+        width: 300px;
+    }
+
+    .feed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .feed-header h1 {
+        margin: 0;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+    }
+
+    .posts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .post {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+    }
+
+    .post-author {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .post-author img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    .post-time {
+        color: #777;
+        font-size: 0.9em;
+    }
+
+    .post-image img {
+        width: 100%;
+        max-height: 600px;
+        object-fit: cover;
+    }
+
+    .post-actions {
+        display: flex;
+        padding: 12px 15px;
+    }
+
+    .like-form {
+        margin-right: 15px;
+    }
+
+    .like-btn, .comment-btn {
+        background: none;
+        border: none;
+        font-size: 1em;
+        cursor: pointer;
+        padding: 0;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .like-btn.liked {
+        color: #e74c3c;
+    }
+
+    .post-caption {
+        padding: 0 15px 12px;
+    }
+
+    .post-comments-preview {
+        padding: 0 15px 12px;
+        border-top: 1px solid #eee;
+    }
+
+    .comment {
+        margin: 8px 0;
+    }
+
+    .view-all-comments {
+        display: block;
+        color: #777;
+        margin-top: 8px;
+        text-decoration: none;
+    }
+
+    .add-comment {
+        padding: 12px 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .comment-input-group {
+        display: flex;
+    }
+
+    .comment-input {
+        flex: 1;
+        border: none;
+        padding: 8px 0;
+        outline: none;
+    }
+
+    .comment-submit {
+        background: none;
+        border: none;
+        color: #007bff;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .no-posts {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-profile-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .user-profile-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .user-profile-link img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    .user-info h3 {
+        margin: 0 0 5px;
+    }
+
+    .user-bio {
+        margin: 0;
+        color: #555;
+        font-size: 0.9em;
+    }
+
+    .suggestions-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+    }
+
+    .suggestions-card h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+
+    .suggestions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .suggestion {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .suggestion-user {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        flex: 1;
+    }
+
+    .suggestion-user img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+
+    .suggestion-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .suggestion-bio {
+        font-size: 0.8em;
+        color: #777;
+    }
+
+    .follow-btn {
+        background: none;
+        border: none;
+        color: #007bff;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+        .feed-container {
+            flex-direction: column;
+        }
+
+        .feed-sidebar {
+            width: 100%;
+            order: -1;
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}

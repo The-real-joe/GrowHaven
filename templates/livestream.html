@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}{{ livestream.title }} - GrowHaven Livestream{% endblock %}
+
+{% block content %}
+<div class="livestream-container">
+    <div class="livestream-header">
+        <h1>{{ livestream.title }}</h1>
+        <div class="livestream-meta">
+            <span class="streamer">By: <a href="{{ url_for('profile', username=livestream.user.username) }}">{{ livestream.user.username }}</a></span>
+            {% if livestream.is_live %}
+                <span class="status live">LIVE</span>
+                <span class="time">Started: {{ livestream.started_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            {% elif livestream.ended_at %}
+                <span class="status ended">ENDED</span>
+                <span class="time">Ended: {{ livestream.ended_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            {% elif livestream.scheduled_time %}
+                <span class="status scheduled">SCHEDULED</span>
+                <span class="time">Scheduled for: {{ livestream.scheduled_time.strftime('%Y-%m-%d %H:%M') }}</span>
+            {% else %}
+                <span class="status not-started">NOT STARTED</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if current_user.id == livestream.user_id %}
+    <div class="owner-controls">
+        <a href="{{ url_for('edit_livestream', livestream_id=livestream.id) }}" class="btn btn-secondary">Edit Stream</a>
+        
+        {% if not livestream.is_live %}
+            <form action="{{ url_for('start_livestream', livestream_id=livestream.id) }}" method="post" class="inline-form">
+                <button type="submit" class="btn btn-success">Start Stream</button>
+            </form>
+        {% else %}
+            <form action="{{ url_for('end_livestream', livestream_id=livestream.id) }}" method="post" class="inline-form">
+                <button type="submit" class="btn btn-danger">End Stream</button>
+            </form>
+        {% endif %}
+        
+        <form action="{{ url_for('delete_livestream', livestream_id=livestream.id) }}" method="post" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this livestream?');">
+            <button type="submit" class="btn btn-danger">Delete Stream</button>
+        </form>
+        
+        <div class="stream-key-container">
+            <p>Your Stream Key (keep this private):</p>
+            <div class="stream-key">
+                <input type="password" value="{{ livestream.stream_key }}" id="streamKey" readonly>
+                <button onclick="toggleStreamKey()" class="btn btn-small">Show/Hide</button>
+                <button onclick="copyStreamKey()" class="btn btn-small">Copy</button>
+            </div>
+            <p class="stream-instructions">
+                To start streaming, use OBS or similar software and set up an RTMP stream to:<br>
+                <code>rtmp://{{ request.host }}/live</code><br>
+                with your stream key.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="livestream-content">
+        <div class="video-container">
+            {% if livestream.is_live %}
+                <!-- Video player for live stream -->
+                <div class="video-player">
+                    <video id="livestreamPlayer" controls autoplay>
+                        <source src="{{ url_for('static', filename='hls/' + livestream.stream_key + '/index.m3u8') }}" type="application/x-mpegURL">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            {% elif livestream.ended_at %}
+                <!-- Placeholder for recorded stream (if implemented) -->
+                <div class="video-placeholder ended">
+                    <img src="{{ url_for('static', filename='uploads/thumbnails/' + livestream.thumbnail) }}" alt="{{ livestream.title }}">
+                    <div class="placeholder-overlay">
+                        <span>This stream has ended</span>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Placeholder for upcoming stream -->
+                <div class="video-placeholder upcoming">
+                    <img src="{{ url_for('static', filename='uploads/thumbnails/' + livestream.thumbnail) }}" alt="{{ livestream.title }}">
+                    <div class="placeholder-overlay">
+                        <span>Stream not started yet</span>
+                        {% if livestream.scheduled_time %}
+                            <p>Scheduled for: {{ livestream.scheduled_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="stream-details">
+            <div class="description">
+                <h3>Description</h3>
+                <p>{{ livestream.description|nl2br }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="livestream-interaction">
+        <div class="comments-section">
+            <h3>Comments</h3>
+            
+            {% if current_user.is_authenticated %}
+                <div class="comment-form">
+                    <form action="{{ url_for('comment_livestream', livestream_id=livestream.id) }}" method="post">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ form.content(class="form-control", placeholder="Add a comment...") }}
+                            {% for error in form.content.errors %}
+                                <span class="error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </form>
+                </div>
+            {% else %}
+                <p class="login-prompt"><a href="{{ url_for('login', next=request.path) }}">Log in</a> to comment on this livestream.</p>
+            {% endif %}
+            
+            <div class="comments-list">
+                {% if comments %}
+                    {% for comment in comments %}
+                        <div class="comment">
+                            <div class="comment-header">
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + comment.user.profile_image) }}" alt="{{ comment.user.username }}" class="comment-avatar">
+                                <div class="comment-meta">
+                                    <a href="{{ url_for('profile', username=comment.user.username) }}" class="comment-author">{{ comment.user.username }}</a>
+                                    <span class="comment-time">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </div>
+                            </div>
+                            <div class="comment-content">
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-comments">No comments yet. Be the first to comment!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleStreamKey() {
+        var x = document.getElementById("streamKey");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    }
+    
+    function copyStreamKey() {
+        var copyText = document.getElementById("streamKey");
+        copyText.type = "text";
+        copyText.select();
+        document.execCommand("copy");
+        copyText.type = "password";
+        alert("Stream key copied to clipboard");
+    }
+</script>
+
+<style>
+    .livestream-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .livestream-header {
+        margin-bottom: 20px;
+    }
+    
+    .livestream-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .status {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .live {
+        background-color: #f44336; /* Red */
+    }
+    
+    .ended {
+        background-color: #757575; /* Gray */
+    }
+    
+    .scheduled, .not-started {
+        background-color: #2196F3; /* Blue */
+    }
+    
+    .owner-controls {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .inline-form {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .stream-key-container {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+    }
+    
+    .stream-key {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .stream-key input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    .stream-instructions {
+        font-size: 14px;
+        color: #555;
+    }
+    
+    .stream-instructions code {
+        background-color: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+    
+    .livestream-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .livestream-content {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .video-container {
+        width: 100%;
+        background-color: #000;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .video-player video {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+    }
+    
+    .video-placeholder {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    }
+    
+    .video-placeholder img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .placeholder-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        text-align: center;
+    }
+    
+    .placeholder-overlay span {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .stream-details {
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .comments-section {
+        margin-top: 30px;
+    }
+    
+    .comment-form {
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: vertical;
+        min-height: 80px;
+    }
+    
+    .comments-list {
+        margin-top: 20px;
+    }
+    
+    .comment {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 15px;
+    }
+    
+    .comment-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+    
+    .comment-meta {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .comment-author {
+        font-weight: bold;
+        text-decoration: none;
+        color: #333;
+    }
+    
+    .comment-time {
+        font-size: 12px;
+        color: #777;
+    }
+    
+    .comment-content {
+        color: #333;
+    }
+    
+    .no-comments, .login-prompt {
+        color: #666;
+        font-style: italic;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background-color: #2196F3;
+        color: white;
+    }
+    
+    .btn-success {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .btn-danger {
+        background-color: #f44336;
+        color: white;
+    }
+    
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    .btn:hover {
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

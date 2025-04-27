@@ -1,0 +1,241 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Manage Livestreams - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Manage Livestreams</h1>
+    
+    <div class="filters">
+        <form method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="all" {% if request.args.get('status') == 'all' or not request.args.get('status') %}selected{% endif %}>All</option>
+                    <option value="live" {% if request.args.get('status') == 'live' %}selected{% endif %}>Live</option>
+                    <option value="upcoming" {% if request.args.get('status') == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="ended" {% if request.args.get('status') == 'ended' %}selected{% endif %}>Ended</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Creator</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Scheduled</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stream in livestreams %}
+                <tr>
+                    <td>{{ stream.id }}</td>
+                    <td>
+                        <a href="{{ url_for('view_livestream', livestream_id=stream.id) }}" target="_blank">
+                            {{ stream.title }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('profile', username=stream.user.username) }}" target="_blank">
+                            {{ stream.user.username }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if stream.is_live %}
+                            <span class="status-badge live">LIVE</span>
+                        {% elif stream.ended_at %}
+                            <span class="status-badge ended">ENDED</span>
+                        {% elif stream.scheduled_time and stream.scheduled_time > now %}
+                            <span class="status-badge upcoming">UPCOMING</span>
+                        {% else %}
+                            <span class="status-badge not-started">NOT STARTED</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ stream.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if stream.scheduled_time %}
+                            {{ stream.scheduled_time.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('view_livestream', livestream_id=stream.id) }}" class="btn btn-sm btn-info" target="_blank">View</a>
+                        
+                        {% if stream.is_live %}
+                            <form action="{{ url_for('end_livestream', livestream_id=stream.id) }}" method="post" class="inline-form">
+                                <button type="submit" class="btn btn-sm btn-warning">End Stream</button>
+                            </form>
+                        {% endif %}
+                        
+                        <form action="{{ url_for('delete_livestream', livestream_id=stream.id) }}" method="post" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this livestream?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if not livestreams %}
+    <div class="no-data">
+        <p>No livestreams found.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .admin-container {
+        padding: 20px;
+    }
+    
+    .filters {
+        margin-bottom: 20px;
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+    }
+    
+    .filter-form {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-control {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .admin-table th, .admin-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .admin-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    
+    .admin-table tr:hover {
+        background-color: #f9f9f9;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .live {
+        background-color: #f44336; /* Red */
+    }
+    
+    .ended {
+        background-color: #757575; /* Gray */
+    }
+    
+    .upcoming {
+        background-color: #2196F3; /* Blue */
+    }
+    
+    .not-started {
+        background-color: #FF9800; /* Orange */
+    }
+    
+    .actions {
+        white-space: nowrap;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 6px 12px;
+        margin-bottom: 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.42857143;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        cursor: pointer;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+    
+    .btn-sm {
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+    
+    .btn-primary {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #2e6da4;
+    }
+    
+    .btn-info {
+        color: #fff;
+        background-color: #5bc0de;
+        border-color: #46b8da;
+    }
+    
+    .btn-warning {
+        color: #fff;
+        background-color: #f0ad4e;
+        border-color: #eea236;
+    }
+    
+    .btn-danger {
+        color: #fff;
+        background-color: #d9534f;
+        border-color: #d43f3a;
+    }
+    
+    .inline-form {
+        display: inline-block;
+        margin: 0 2px;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        color: #666;
+        font-style: italic;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Livestream - GrowHaven{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Edit Livestream</h1>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+            {% for error in form.title.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control") }}
+            {% for error in form.description.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Describe what your livestream will be about. This helps viewers decide if they want to watch.</small>
+        </div>
+        
+        <div class="form-group">
+            {{ form.scheduled_time.label(class="form-label") }}
+            {{ form.scheduled_time(class="form-control") }}
+            {% for error in form.scheduled_time.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Optional. Format: YYYY-MM-DD HH:MM. Leave blank to create without a schedule.</small>
+        </div>
+        
+        <div class="form-group">
+            {{ form.thumbnail.label(class="form-label") }}
+            <div class="current-thumbnail">
+                <p>Current thumbnail:</p>
+                <img src="{{ url_for('static', filename='uploads/thumbnails/' + livestream.thumbnail) }}" alt="Current thumbnail" class="thumbnail-preview">
+            </div>
+            {{ form.thumbnail(class="form-control-file") }}
+            {% for error in form.thumbnail.errors %}
+                <span class="error">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text">Optional. Recommended size: 1280x720 pixels (16:9 aspect ratio). Leave empty to keep current thumbnail.</small>
+        </div>
+        
+        <div class="form-group">
+            <div class="stream-key-container">
+                <h3>Your Stream Key</h3>
+                <p>Keep this private. You'll need it to stream using OBS or similar software.</p>
+                <div class="stream-key">
+                    <input type="password" value="{{ livestream.stream_key }}" id="streamKey" readonly>
+                    <button type="button" onclick="toggleStreamKey()" class="btn btn-small">Show/Hide</button>
+                    <button type="button" onclick="copyStreamKey()" class="btn btn-small">Copy</button>
+                </div>
+                <p class="stream-instructions">
+                    To stream, use OBS Studio and set up an RTMP stream to:<br>
+                    <code>rtmp://{{ request.host }}/live</code><br>
+                    with your stream key.
+                </p>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('view_livestream', livestream_id=livestream.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleStreamKey() {
+        var x = document.getElementById("streamKey");
+        if (x.type === "password") {
+            x.type = "text";
+        } else {
+            x.type = "password";
+        }
+    }
+    
+    function copyStreamKey() {
+        var copyText = document.getElementById("streamKey");
+        copyText.type = "text";
+        copyText.select();
+        document.execCommand("copy");
+        copyText.type = "password";
+        alert("Stream key copied to clipboard");
+    }
+</script>
+
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+    
+    .form-control-file {
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .error {
+        color: #f44336;
+        font-size: 14px;
+        display: block;
+        margin-top: 5px;
+    }
+    
+    .form-actions {
+        margin-top: 30px;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background-color: #757575;
+        color: white;
+        margin-left: 10px;
+    }
+    
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    
+    .btn:hover {
+        opacity: 0.9;
+    }
+    
+    .current-thumbnail {
+        margin-bottom: 10px;
+    }
+    
+    .thumbnail-preview {
+        max-width: 320px;
+        max-height: 180px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 5px;
+    }
+    
+    .stream-key-container {
+        background-color: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    .stream-key {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .stream-key input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    .stream-instructions {
+        font-size: 14px;
+        color: #555;
+        margin-top: 10px;
+    }
+    
+    .stream-instructions code {
+        background-color: #e0e0e0;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+</style>
+{% endblock %}
