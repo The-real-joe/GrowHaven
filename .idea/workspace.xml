@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ed0741f8-7dec-44fc-9dc9-7df86aa16296" name="Changes" comment="added req">
-      <change beforePath="$PROJECT_DIR$/init_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/init_db.py" afterDir="false" />
+    <list default="true" id="ed0741f8-7dec-44fc-9dc9-7df86aa16296" name="Changes" comment="updated db">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +117,7 @@
       <updated>1745721061675</updated>
       <workItem from="1745721067573" duration="1581000" />
       <workItem from="1745722687334" duration="7669000" />
-      <workItem from="1745784314745" duration="2881000" />
+      <workItem from="1745784314745" duration="4006000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <option name="closed" value="true" />
@@ -142,7 +143,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745786779650</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="updated db">
+      <option name="closed" value="true" />
+      <created>1745787460908</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1745787460908</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,6 +183,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first" />
     <MESSAGE value="added req" />
-    <option name="LAST_COMMIT_MESSAGE" value="added req" />
+    <MESSAGE value="updated db" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated db" />
   </component>
 </project>

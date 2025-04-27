@@ -29,16 +29,16 @@ class User(UserMixin, db.Model):
     website = db.Column(db.String(120))
 
     # Social relationships
-    posts = db.relationship('Post', backref='author', lazy='dynamic', cascade='all, delete-orphan')
+    posts = db.relationship('Post', backref='author', cascade='all, delete-orphan')
 
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
-        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+        backref=db.backref('followers'))
 
-    likes = db.relationship('Like', backref='user', lazy='dynamic', cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='author', lazy='dynamic', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='user', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='author', cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -89,8 +89,8 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     # Social interactions
-    likes = db.relationship('Like', backref='post', lazy='dynamic', cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='post', cascade='all, delete-orphan')
+    comments = db.relationship('Comment', backref='post', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Post {self.id} by {self.user_id}>'
@@ -145,7 +145,7 @@ class ForumCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
-    topics = db.relationship('ForumTopic', backref='category', lazy='dynamic')
+    topics = db.relationship('ForumTopic', backref='category')
 
     def __repr__(self):
         return f'<ForumCategory {self.name}>'
@@ -164,7 +164,7 @@ class ForumTopic(db.Model):
     views = db.Column(db.Integer, default=0)
 
     user = db.relationship('User', backref='topics')
-    posts = db.relationship('ForumPost', backref='topic', lazy='dynamic', cascade="all, delete-orphan")
+    posts = db.relationship('ForumPost', backref='topic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<ForumTopic {self.title}>'
@@ -178,7 +178,7 @@ class ForumPost(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id'), nullable=False)
 
-    user = db.relationship('User', backref='forum_posts', lazy='dynamic')
+    user = db.relationship('User', backref='forum_posts')
 
     def __repr__(self):
         return f'<ForumPost by {self.user_id} in {self.topic_id}>'
@@ -199,7 +199,7 @@ class Campaign(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='campaigns')
-    donations = db.relationship('Donation', backref='campaign', lazy='dynamic', cascade="all, delete-orphan")
+    donations = db.relationship('Donation', backref='campaign', cascade="all, delete-orphan")
 
     @property
     def progress_percentage(self):
@@ -243,7 +243,7 @@ class Livestream(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     user = db.relationship('User', backref='livestreams')
-    comments = db.relationship('LivestreamComment', backref='livestream', lazy='dynamic', cascade="all, delete-orphan")
+    comments = db.relationship('LivestreamComment', backref='livestream', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Livestream {self.title} by {self.user_id}>'
