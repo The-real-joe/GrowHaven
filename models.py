@@ -178,7 +178,7 @@ class ForumPost(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     topic_id = db.Column(db.Integer, db.ForeignKey('forum_topics.id'), nullable=False)
 
-    user = db.relationship('User', backref='posts')
+    user = db.relationship('User', backref='forum_posts', lazy='dynamic')
 
     def __repr__(self):
         return f'<ForumPost by {self.user_id} in {self.topic_id}>'
