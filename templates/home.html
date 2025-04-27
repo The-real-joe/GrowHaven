@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Grow Haven - Your Community Platform{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1>Welcome to Grow</h1>
+        <p>A community platform for sharing, learning, and growing together</p>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <h3>Community Forum</h3>
+            <p>Join discussions, share ideas, and connect with like-minded individuals in our vibrant community forum.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Fundraising</h3>
+            <p>Support important causes and projects through our fundraising platform. Make a difference in your community.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Knowledge Sharing</h3>
+            <p>Access resources, share experiences, and learn from community members through our knowledge base.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>Events & Meetups</h3>
+            <p>Stay updated with community events, workshops, and meetups happening in your area.</p>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2>Ready to Get Started?</h2>
+        <p>Join our growing community today and be part of something meaningful.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="cta-button">Sign Up Now</a>
+        {% else %}
+            <a href="{{ url_for('forum') }}" class="cta-button">Visit Forum</a>
+        {% endif %}
+    </section>
+{% endblock %}

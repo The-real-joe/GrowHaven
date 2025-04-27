@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="auth-container">
+        <h1>Login</h1>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.email.label(class="form-control-label") }}
+                {% if form.email.errors %}
+                    {{ form.email(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.email(class="form-control") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label(class="form-control-label") }}
+                {% if form.password.errors %}
+                    {{ form.password(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.password(class="form-control") }}
+                {% endif %}
+            </div>
+            <div class="form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div>
+            <div class="form-group mt-4">
+                {{ form.submit(class="btn-primary") }}
+            </div>
+        </form>
+        <div class="auth-links">
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+            <p><small>Forgot Password? <a href="#">Reset Password</a></small></p>
+        </div>
+    </div>
+{% endblock %}

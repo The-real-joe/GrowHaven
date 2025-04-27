@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Campaign{% endblock %}
+
+{% block content %}
+    <div class="edit-campaign-container">
+        <h1>Edit Campaign</h1>
+        
+        <form method="POST" action="{{ url_for('edit_campaign', campaign_id=campaign.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-control") }}
+                {% if form.title.errors %}
+                    <div class="errors">
+                        {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows=10) }}
+                {% if form.description.errors %}
+                    <div class="errors">
+                        {% for error in form.description.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.goal_amount.label }}
+                {{ form.goal_amount(class="form-control") }}
+                {% if form.goal_amount.errors %}
+                    <div class="errors">
+                        {% for error in form.goal_amount.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.end_date.label }}
+                {{ form.end_date(class="form-control", type="date") }}
+                {% if form.end_date.errors %}
+                    <div class="errors">
+                        {% for error in form.end_date.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="form-actions">
+                {{ form.submit(class="btn-primary", value="Update Campaign") }}
+                <a href="{{ url_for('admin_campaigns') }}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <div class="campaign-info">
+            <h2>Campaign Information</h2>
+            <p><strong>Current Amount:</strong> ${{ campaign.current_amount }}</p>
+            <p><strong>Created By:</strong> {{ campaign.user.username }}</p>
+            <p><strong>Start Date:</strong> {{ campaign.start_date.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Status:</strong> 
+                {% if campaign.is_approved %}
+                    <span class="status-approved">Approved</span>
+                {% else %}
+                    <span class="status-pending">Pending Approval</span>
+                {% endif %}
+                {% if campaign.is_featured %}
+                    <span class="status-featured">Featured</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <style>
+        .edit-campaign-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        
+        .errors {
+            color: #f44336;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .form-actions {
+            margin-top: 20px;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        .btn-secondary {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 1em;
+        }
+        
+        .campaign-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .status-approved {
+            background-color: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .status-pending {
+            background-color: #ff9800;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        
+        .status-featured {
+            background-color: #2196F3;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+    </style>
+{% endblock %}

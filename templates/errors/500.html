@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - Grow Haven{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <h1>500 - Server Error</h1>
+    <p>Oops! Something went wrong on our end.</p>
+    <p>Our technical team has been notified of this issue. Please try again later or navigate back to the <a href="{{ url_for('home') }}">homepage</a>.</p>
+</div>
+{% endblock %}

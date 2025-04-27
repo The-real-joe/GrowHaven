@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Fundraising - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="fundraising-container">
+        <h1>Fundraising</h1>
+        <p>Support important causes and projects within our community.</p>
+        
+        <div class="fundraising-campaigns">
+            <h2>Active Campaigns</h2>
+            
+            {% if campaigns %}
+                <div class="campaign-grid">
+                    {% for campaign in campaigns %}
+                        <div class="campaign-card">
+                            <h3>{{ campaign.title }}</h3>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: {{ campaign.progress_percentage }}%"></div>
+                            </div>
+                            <p class="progress-text">{{ campaign.progress_percentage }}% funded</p>
+                            <p class="campaign-stats">
+                                ${{ "%.2f"|format(campaign.current_amount) }} raised of 
+                                ${{ "%.2f"|format(campaign.goal_amount) }} goal
+                            </p>
+                            <p>{{ campaign.description|truncate(100) }}</p>
+                            <div class="campaign-footer">
+                                <span class="campaign-date">Ends: {{ campaign.end_date.strftime('%Y-%m-%d') }}</span>
+                                <a href="{{ url_for('campaign', campaign_id=campaign.id) }}" class="btn-secondary">Learn More</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No active campaigns at the moment.</p>
+            {% endif %}
+        </div>
+        
+        <div class="start-campaign">
+            <h2>Start Your Own Campaign</h2>
+            <p>Have a project that needs funding? Start a campaign and get support from the community.</p>
+            
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('new_campaign') }}" class="btn-primary">Start Campaign</a>
+            {% else %}
+                <p>Please <a href="{{ url_for('login', next=url_for('new_campaign')) }}">login</a> to start a fundraising campaign.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

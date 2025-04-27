@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Community Forum - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="forum-container">
+        <h1>Community Forum</h1>
+        <p>Join discussions with fellow community members.</p>
+        
+        <div class="forum-categories">
+            <h2>Categories</h2>
+            <div class="category-grid">
+                {% if categories %}
+                    {% for category in categories %}
+                        <div class="category-card">
+                            <h3><a href="{{ url_for('forum_category', category_id=category.id) }}">{{ category.name }}</a></h3>
+                            <p>{{ category.description }}</p>
+                            <div class="category-stats">
+                                <span>{{ category.topics.count() }} topics</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No forum categories available.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="forum-recent">
+            <h2>Recent Discussions</h2>
+            
+            {% if recent_topics %}
+                <div class="recent-topics-list">
+                    {% for topic in recent_topics %}
+                        <div class="topic-item">
+                            <div class="topic-title">
+                                <a href="{{ url_for('forum_topic', topic_id=topic.id) }}">{{ topic.title }}</a>
+                            </div>
+                            <div class="topic-meta">
+                                <span class="topic-author">by {{ topic.user.username }}</span>
+                                <span class="topic-date">{{ topic.created_at.strftime('%Y-%m-%d') }}</span>
+                                <span class="topic-category">in <a href="{{ url_for('forum_category', category_id=topic.category.id) }}">{{ topic.category.name }}</a></span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No discussions yet. Be the first to start a conversation!</p>
+            {% endif %}
+            
+            {% if current_user.is_authenticated and categories %}
+                <div class="new-topic-dropdown">
+                    <button class="btn-primary dropdown-toggle">Start New Discussion</button>
+                    <div class="dropdown-content">
+                        {% for category in categories %}
+                            <a href="{{ url_for('new_topic', category_id=category.id) }}">{{ category.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% elif not current_user.is_authenticated %}
+                <p>Please <a href="{{ url_for('login', next=url_for('forum')) }}">login</a> to start or join discussions.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic.title }} - Forum - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="forum-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('forum') }}">Forum</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('forum_category', category_id=topic.category_id) }}">{{ topic.category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ topic.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="topic-header">
+            <h1>{{ topic.title }}</h1>
+            <div class="topic-meta">
+                <span>Posted by {{ topic.user.username }} on {{ topic.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+        </div>
+        
+        <div class="topic-content">
+            {{ topic.content | safe }}
+        </div>
+        
+        <div class="topic-replies">
+            <h3>Replies</h3>
+            
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="post-card">
+                        <div class="post-header">
+                            <div class="post-author">
+                                {{ post.user.username }}
+                            </div>
+                            <div class="post-date">
+                                {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            {{ post.content | safe }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No replies yet.</p>
+            {% endif %}
+        </div>
+        
+        <div class="reply-form">
+            <h3>Post a Reply</h3>
+            
+            {% if current_user.is_authenticated %}
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {% if form.content.errors %}
+                            {{ form.content(class="form-control is-invalid", rows=5) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.content.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.content(class="form-control", rows=5) }}
+                        {% endif %}
+                    </div>
+                    <div class="form-group mt-3">
+                        {{ form.submit(class="btn-primary") }}
+                    </div>
+                </form>
+            {% else %}
+                <p>Please <a href="{{ url_for('login', next=request.path) }}">login</a> to post a reply.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

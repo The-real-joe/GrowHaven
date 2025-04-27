@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}{{ campaign.title }} - Fundraising - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="campaign-detail-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('fundraising') }}">Fundraising</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ campaign.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="campaign-header">
+            <h1>{{ campaign.title }}</h1>
+            <div class="campaign-meta">
+                <span>Created by {{ campaign.user.username }} on {{ campaign.start_date.strftime('%Y-%m-%d') }}</span>
+                <span>Ends on {{ campaign.end_date.strftime('%Y-%m-%d') }}</span>
+            </div>
+        </div>
+        
+        <div class="campaign-progress">
+            <div class="progress-bar">
+                <div class="progress" style="width: {{ campaign.progress_percentage }}%"></div>
+            </div>
+            <div class="progress-stats">
+                <span class="raised">${{ "%.2f"|format(campaign.current_amount) }} raised</span>
+                <span class="goal">of ${{ "%.2f"|format(campaign.goal_amount) }} goal</span>
+                <span class="percentage">{{ campaign.progress_percentage }}% funded</span>
+            </div>
+        </div>
+        
+        <div class="campaign-content">
+            <div class="campaign-description">
+                {{ campaign.description | safe }}
+            </div>
+            
+            <div class="campaign-sidebar">
+                <div class="donation-form">
+                    <h3>Support This Campaign</h3>
+                    
+                    {% if current_user.is_authenticated %}
+                        <form method="POST" action="">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                {{ form.amount.label(class="form-control-label") }}
+                                {% if form.amount.errors %}
+                                    {{ form.amount(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.amount.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.amount(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                {{ form.message.label(class="form-control-label") }}
+                                {% if form.message.errors %}
+                                    {{ form.message(class="form-control is-invalid", rows=3) }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.message.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.message(class="form-control", rows=3) }}
+                                {% endif %}
+                            </div>
+                            <div class="form-check mb-3">
+                                {{ form.is_anonymous(class="form-check-input") }}
+                                {{ form.is_anonymous.label(class="form-check-label") }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.submit(class="btn-primary w-100") }}
+                            </div>
+                        </form>
+                    {% else %}
+                        <p>Please <a href="{{ url_for('login', next=request.path) }}">login</a> to make a donation.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="campaign-donations">
+            <h3>Recent Donations</h3>
+            
+            {% if donations %}
+                <div class="donations-list">
+                    {% for donation in donations %}
+                        <div class="donation-card">
+                            <div class="donation-header">
+                                <span class="donation-amount">${{ "%.2f"|format(donation.amount) }}</span>
+                                <span class="donation-date">{{ donation.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                            <div class="donation-info">
+                                <span class="donation-donor">
+                                    {% if donation.is_anonymous %}
+                                        Anonymous
+                                    {% else %}
+                                        {{ donation.user.username }}
+                                    {% endif %}
+                                </span>
+                                {% if donation.message %}
+                                    <p class="donation-message">{{ donation.message }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No donations yet. Be the first to support this campaign!</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

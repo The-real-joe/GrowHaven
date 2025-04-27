@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul class="main-nav">
+            <li><a href="{{ url_for('home') }}">🏠 Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('feed') }}">📱 Feed</a></li>
+                <li><a href="{{ url_for('search_users') }}">🔍 Search</a></li>
+                <li><a href="{{ url_for('new_post') }}">📷 Share</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('about') }}">📚 About</a></li>
+            <li><a href="{{ url_for('contact') }}">📞 Contact Us</a></li>
+            <li><a href="{{ url_for('forum') }}">🗣️ Forum</a></li>
+            <li><a href="{{ url_for('fundraising') }}">💰 Fundraising</a></li>
+            <li><a href="{{ url_for('livestreams') }}">📹 Livestreams</a></li>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+                <li><a href="{{ url_for('admin_dashboard') }}">⚙️ Admin Panel</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="auth-sidebar">
+        {% if current_user.is_authenticated %}
+            <div class="user-info">
+                <a href="{{ url_for('profile', username=current_user.username) }}" class="profile-link">
+                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.profile_image) }}" 
+                         alt="{{ current_user.username }}" class="mini-profile-pic">
+                    <span>{{ current_user.username }}</span>
+                </a>
+                <div class="user-actions">
+                    <a href="{{ url_for('edit_profile') }}">Edit Profile</a>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            </div>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </div>
+
+    <style>
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 10px;
+        }
+
+        .mini-profile-pic {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;
+        }
+
+        .user-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .user-actions a {
+            font-size: 0.8em;
+            margin: 3px 0;
+        }
+    </style>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

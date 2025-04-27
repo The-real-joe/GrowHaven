@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - Forum - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="forum-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('forum') }}">Forum</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
+            </ol>
+        </nav>
+        
+        <div class="category-header">
+            <h1>{{ category.name }}</h1>
+            <p>{{ category.description }}</p>
+            
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('new_topic', category_id=category.id) }}" class="btn-primary">Start New Topic</a>
+            {% else %}
+                <p>Please <a href="{{ url_for('login', next=request.path) }}">login</a> to start a new topic.</p>
+            {% endif %}
+        </div>
+        
+        <div class="topics-list">
+            {% if topics %}
+                <table class="topics-table">
+                    <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Author</th>
+                            <th>Created</th>
+                            <th>Replies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for topic in topics %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('forum_topic', topic_id=topic.id) }}">{{ topic.title }}</a>
+                                </td>
+                                <td>{{ topic.user.username }}</td>
+                                <td>{{ topic.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ topic.posts.count() }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-topics">
+                    <p>No topics in this category yet. Be the first to start a conversation!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

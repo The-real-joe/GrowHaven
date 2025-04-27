@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}New Topic - {{ category.name }} - Grow Haven{% endblock %}
+
+{% block content %}
+    <div class="forum-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('forum') }}">Forum</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('forum_category', category_id=category.id) }}">{{ category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">New Topic</li>
+            </ol>
+        </nav>
+        
+        <h1>Create New Topic in {{ category.name }}</h1>
+        
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.title.label(class="form-control-label") }}
+                {% if form.title.errors %}
+                    {{ form.title(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.title(class="form-control") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.content.label(class="form-control-label") }}
+                {% if form.content.errors %}
+                    {{ form.content(class="form-control is-invalid", rows=10) }}
+                    <div class="invalid-feedback">
+                        {% for error in form.content.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.content(class="form-control", rows=10) }}
+                {% endif %}
+            </div>
+            <div class="form-group mt-4">
+                {{ form.submit(class="btn-primary") }}
+                <a href="{{ url_for('forum_category', category_id=category.id) }}" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

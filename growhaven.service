@@ -1,0 +1,16 @@
+[Unit]
+Description=GrowHaven Flask Application
+After=network.target
+
+[Service]
+User=yourusername
+Group=yourgroup
+WorkingDirectory=/path/to/growhaven
+Environment="PATH=/path/to/growhaven/.venv/bin"
+ExecStart=/path/to/growhaven/.venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5000 wsgi:app
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target
