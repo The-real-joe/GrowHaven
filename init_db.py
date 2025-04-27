@@ -14,9 +14,6 @@ def init_db():
     app = create_app('development')
 
     with app.app_context():
-        # Create tables
-        db.create_all()
-
         # Create default admin user if it doesn't exist
         admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
         admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
